@@ -3,12 +3,16 @@ package com.crud.usuarios.controllers;
 import com.crud.usuarios.models.Product;
 import com.crud.usuarios.services.ProductService;
 import com.crud.usuarios.services.ProductServiceImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -36,16 +40,24 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> crearProducto(@RequestBody Product producto){
+    public ResponseEntity<?> crearProducto(@Valid  @RequestBody Product producto, BindingResult result){
+        if(result.hasFieldErrors()){
+            return validation(result);
+        }
         Product productoDb = productService.save(producto);
         return ResponseEntity.status(HttpStatus.CREATED).body(productoDb);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> actualizarProducto(Long id, @RequestBody Product product){
+    public ResponseEntity<?> actualizarProducto(@Valid @RequestBody Product product, BindingResult result, Long id ){
+        if(result.hasFieldErrors()){
+            return validation(result);
+        }
         product.setId(id);
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.save(product));
     }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarProducto(@PathVariable Long id){
@@ -56,6 +68,15 @@ public class ProductController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private ResponseEntity<?> validation(BindingResult result) {
+
+        Map<String, String> validation= new HashMap<>();
+        result.getFieldErrors().forEach(err-> {
+            validation.put(err.getField(), "El campo "+ err.getField()+ " " + err.getDefaultMessage());
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validation);
     }
 
 }

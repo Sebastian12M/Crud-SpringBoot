@@ -1,6 +1,7 @@
 package com.crud.usuarios.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "products")
@@ -9,8 +10,13 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank
+    @Size(min = 3, max =20)
     private String name;
+    @Min(500)
+    @NotNull
     private Integer price;
+    @NotBlank
     private String description;
 
 
